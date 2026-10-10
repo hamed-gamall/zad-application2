@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand palette: deep emerald, warm gold, ivory (matches the web app). -->
+    <color name="colorPrimary">#0B2A22</color>
+    <color name="colorPrimaryDark">#061512</color>
+    <color name="colorAccent">#C8A45A</color>
+
+    <!-- System bars and launch background: the app's near-black green floor. -->
+    <color name="statusBarColor">#061512</color>
+    <color name="splashBackground">#061512</color>
+</resources>

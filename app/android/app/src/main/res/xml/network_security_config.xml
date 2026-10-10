@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- App-wide default: no cleartext (plain http://) traffic at all. -->
+    <base-config cleartextTrafficPermitted="false" />
+
+    <!-- Narrow exception for the Quran radio/reciter audio CDN(s). The app
+         itself always requests https:// streams (see toPlayableStreamUrl in
+         src/lib/live.ts) — this exists only as a safety net for a station
+         whose server genuinely has no https endpoint. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">mp3quran.net</domain>
+    </domain-config>
+
+    <!-- إذاعة القرآن الكريم من القاهرة is played by native ExoPlayer (see
+         MediaPlaybackService.startNativeExoPlayer), which starts the
+         connection at https://stream.radiojar.com/... . RadioJar's edge then
+         sometimes 30x-redirects that to a *different* host over plain
+         http:// (observed in Logcat as e.g. http://n0f.radiojar.com/...,
+         http://n03.radiojar.com/..., the edge host varies). ExoPlayer is
+         configured to follow that cross-protocol redirect
+         (setAllowCrossProtocolRedirects(true)), but Android's own network
+         stack still separately refuses to open the resulting plain-http
+         socket at all unless this domain is explicitly allowed here — this
+         exception is what that second half of the fix requires. Scoped to
+         just radiojar.com, not a global cleartext allowance. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">radiojar.com</domain>
+    </domain-config>
+</network-security-config>

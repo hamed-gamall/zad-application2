@@ -1,0 +1,456 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   Zad Al Muslim — design system
+   Deep emerald → near-black green, warm gold, soft ivory. Tokens first,
+   then surfaces, motion, and the few shared primitives every screen uses.
+   ========================================================================= */
+:root {
+  --ink-night: #061512;       /* near-black green: the app's floor */
+  --ink-night-2: #09231d;
+  --parchment: #071e19;       /* base surface (kept name so existing pages inherit) */
+  --parchment-2: #0b2a22;
+  --gold: #c8a45a;            /* warm Islamic gold */
+  --gold-bright: #e3c987;
+  --emerald: #2f9e82;
+  --jade: #1f6f5c;
+  --teal: #0f3d36;
+  --burgundy: #d08a6b;
+  --ivory: #f3ecd9;
+  --text-on-night: #f3ecd9;
+  --text-on-parchment: #f1ead8;
+  --muted-on-night: #9db3aa;
+  --muted-on-parchment: #9db3aa;
+
+  --radius-sheet: 28px;
+  --radius-control: 999px;
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --glass: rgba(9, 35, 29, 0.62);
+  --glass-line: rgba(227, 201, 135, 0.14);
+  --surface-strong: rgba(6, 21, 18, 0.6);   /* inside rings / dials */
+  --veil: rgba(243, 236, 217, 0.06);        /* inputs, chips */
+  --atmos-glow: rgba(47, 158, 130, 0.22);
+  --atmos-a: #0b2a22;
+  --atmos-b: #071e19;
+  --atmos-c: #061512;
+  --on-gold: #1a1407;
+  --dock-h: 64px;
+}
+
+@theme inline {
+  --color-ink-night: var(--ink-night);
+  --color-ink-night-2: var(--ink-night-2);
+  --color-parchment: var(--parchment);
+  --color-parchment-2: var(--parchment-2);
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-emerald: var(--emerald);
+  --color-jade: var(--jade);
+  --color-burgundy: var(--burgundy);
+  --font-display: var(--font-amiri);
+  --font-quran: var(--font-amiri-quran);
+  --font-body: var(--font-cairo);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: calc(16px * var(--app-font-scale, 1));
+  background: var(--ink-night);
+  color-scheme: dark;
+}
+html[data-theme="sahara"],
+html[data-theme="emerald"],
+html[data-theme="andalusi"] { color-scheme: light; }
+
+html, body { max-width: 100%; overflow-x: clip; }
+/* Never let any single element widen the page: on a phone a 4% overflow makes
+   the whole WebView zoom out and shifts everything off-screen. */
+body > * { max-width: 100vw; }
+img, svg, video, canvas { max-width: 100%; }
+body {
+  background: transparent;
+  color: var(--text-on-parchment);
+  font-family: var(--font-cairo), "Tajawal", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* ---------- Atmosphere: layered depth behind every screen ---------- */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 60% at 85% -10%, var(--atmos-glow), transparent 60%),
+    radial-gradient(90% 50% at 0% 40%, rgba(200, 164, 90, 0.07), transparent 65%),
+    linear-gradient(180deg, var(--atmos-a) 0%, var(--atmos-b) 38%, var(--atmos-c) 100%);
+}
+
+/* ---------- Glass: a layer, used where hierarchy needs it ---------- */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid var(--glass-line);
+  box-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ---------- Floating dock ---------- */
+.dock {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  transition: transform 0.45s var(--ease-spring), opacity 0.3s;
+}
+.dock[data-hidden="true"] { transform: translateY(140%); opacity: 0; }
+.dock-inner {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  width: min(92vw, 420px);
+  padding: 6px 10px;
+  border-radius: 30px;
+}
+.dock-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  flex: 1; min-width: 0; height: 54px; border-radius: 20px;
+  color: var(--muted-on-night); font-size: 10.5px; font-weight: 600;
+  transition: color .3s, transform .25s var(--ease-spring);
+}
+.dock-item[aria-current="page"] { color: var(--gold-bright); }
+.dock-item[aria-current="page"] svg { filter: drop-shadow(0 0 6px rgba(227,201,135,.6)); }
+.dock-item:active { transform: scale(.92); }
+.dock-home {
+  flex: 0 0 auto; width: 64px; height: 64px; margin-top: -30px; border-radius: 999px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: #030d0b; border: 2px solid var(--gold);
+  box-shadow: 0 0 0 5px var(--glass), 0 10px 30px -6px rgba(200,164,90,.55);
+  transition: transform .3s var(--ease-spring);
+}
+.dock-home img { width: 100%; height: 100%; object-fit: cover; }
+.dock-home:active { transform: scale(.94); }
+.dock-home[aria-current="page"] { box-shadow: 0 0 0 5px var(--glass), 0 0 28px 4px rgba(227,201,135,.6); }
+
+/* ---------- Bottom sheet ---------- */
+.sheet-backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(2, 8, 7, 0.6);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.sheet-backdrop[data-open="true"] { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 51;
+  max-height: 86dvh; overflow-y: auto;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
+  transform: translateY(105%);
+  transition: transform 0.5s var(--ease-spring);
+  margin-inline: auto; max-width: 560px;
+}
+.sheet[data-open="true"] { transform: translateY(0); }
+.sheet-grab { width: 44px; height: 4px; border-radius: 4px; background: rgba(243, 236, 217, 0.22); margin: 0 auto 18px; }
+
+/* ---------- Splash ---------- */
+.splash {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(70% 50% at 50% 42%, var(--atmos-a) 0%, var(--atmos-b) 55%, var(--atmos-c) 100%);
+  transition: opacity 0.7s ease, visibility 0.7s;
+}
+.splash[data-done="true"] { opacity: 0; visibility: hidden; }
+.splash-logo { width: min(50vw, 210px); border-radius: 44px; box-shadow: 0 0 120px 10px rgba(200, 164, 90, 0.28); }
+.splash { overflow: hidden; }
+.splash .scene-art { -webkit-mask-image: none; mask-image: none; }
+
+/* ---------- Home atmosphere helpers ---------- */
+.prayer-glow {
+  position: absolute; inset: -20% 0 auto; height: 120%; max-width: 100%;
+  background: radial-gradient(50% 50% at 50% 30%, rgba(227, 201, 135, 0.20), transparent 70%);
+  pointer-events: none;
+}
+.journey-line { background: linear-gradient(to bottom, var(--gold), rgba(200, 164, 90, 0.05)); width: 1.5px; }
+.mushaf-thumb {
+  background: linear-gradient(160deg, #f6efdc, #e8dcbc);
+  color: #2a2110;
+  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.7), inset 0 0 0 5px #f6efdc, inset 0 0 0 6px rgba(160, 120, 40, 0.5);
+}
+.pressable { transition: transform 0.25s var(--ease-spring), background 0.3s; }
+.pressable:active { transform: scale(0.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dock, .sheet, .splash, .pressable, .dock-item { transition-duration: 0.01ms !important; }
+}
+
+/* ---------- Themes ----------
+   Every theme defines the FULL semantic token set (surface, text, muted,
+   accent, glass, atmosphere). Components only use these tokens, so a theme
+   can never leave text unreadable. Two dark themes, three light ones. */
+html[data-theme="night"] {
+  --ink-night: #05070d; --ink-night-2: #0b1020; --parchment: #0b0f1a; --parchment-2: #12182a;
+  --gold: #c9a227; --gold-bright: #e6c15a; --emerald: #2fae8f; --burgundy: #d1685f;
+  --ivory: #eef0f6; --text-on-night: #eef0f6; --text-on-parchment: #eef0f6;
+  --muted-on-night: #a9b0c6; --muted-on-parchment: #a9b0c6;
+  --glass: rgba(14, 20, 38, 0.66); --glass-line: rgba(230, 193, 90, 0.16);
+  --surface-strong: rgba(5, 7, 13, 0.62); --veil: rgba(238, 240, 246, 0.06);
+  --atmos-glow: rgba(70, 110, 200, 0.2); --atmos-a: #121a30; --atmos-b: #0a0f1d; --atmos-c: #05070d;
+}
+html[data-theme="sahara"] {
+  --ink-night: #faf1de; --ink-night-2: #f2e2bd; --parchment: #faf1de; --parchment-2: #f2e2bd;
+  --gold: #b9791f; --gold-bright: #8a560f; --emerald: #7a5a2a; --burgundy: #8c3b25;
+  --ivory: #2e2211; --text-on-night: #2e2211; --text-on-parchment: #2e2211;
+  --muted-on-night: #7a6a4d; --muted-on-parchment: #7a6a4d;
+  --glass: rgba(255, 250, 238, 0.78); --glass-line: rgba(120, 80, 20, 0.18);
+  --surface-strong: rgba(255, 250, 238, 0.8); --veil: rgba(70, 45, 10, 0.07); --on-gold: #2a1a05;
+  --atmos-glow: rgba(217, 154, 53, 0.25); --atmos-a: #fbf3e2; --atmos-b: #f6e9cc; --atmos-c: #efdcb2;
+  color-scheme: light;
+}
+html[data-theme="emerald"] {
+  --ink-night: #f2f8f4; --ink-night-2: #e2efe6; --parchment: #f2f8f4; --parchment-2: #e2efe6;
+  --gold: #a9861c; --gold-bright: #0f6e57; --emerald: #0f6e57; --burgundy: #7a2e2e;
+  --ivory: #14261f; --text-on-night: #14261f; --text-on-parchment: #14261f;
+  --muted-on-night: #52685f; --muted-on-parchment: #52685f;
+  --glass: rgba(250, 255, 252, 0.8); --glass-line: rgba(15, 110, 87, 0.2);
+  --surface-strong: rgba(250, 255, 252, 0.82); --veil: rgba(15, 80, 60, 0.07); --on-gold: #0d1f19;
+  --atmos-glow: rgba(15, 110, 87, 0.2); --atmos-a: #f5fbf7; --atmos-b: #e8f3ec; --atmos-c: #d6e8dd;
+  color-scheme: light;
+}
+html[data-theme="andalusi"] {
+  --ink-night: #eef3f8; --ink-night-2: #dee9f1; --parchment: #eef3f8; --parchment-2: #dee9f1;
+  --gold: #9c7a1f; --gold-bright: #1a6f8f; --emerald: #1a6f8f; --burgundy: #6a3560;
+  --ivory: #10202f; --text-on-night: #10202f; --text-on-parchment: #10202f;
+  --muted-on-night: #556777; --muted-on-parchment: #556777;
+  --glass: rgba(250, 253, 255, 0.8); --glass-line: rgba(26, 111, 143, 0.2);
+  --surface-strong: rgba(250, 253, 255, 0.82); --veil: rgba(16, 60, 90, 0.07); --on-gold: #0d1a26;
+  --atmos-glow: rgba(26, 111, 143, 0.2); --atmos-a: #f3f8fc; --atmos-b: #e4eef6; --atmos-c: #d0e0ec;
+  color-scheme: light;
+}
+
+/* Utilities written for the dark default (bg-white/NN, border-white/NN) become
+   dark-on-light tints inside the light themes, so nothing vanishes. */
+html:is([data-theme="sahara"],[data-theme="emerald"],[data-theme="andalusi"]) :is([class^="bg-white/"],[class*=" bg-white/"]) { background-color: var(--veil) !important; }
+html:is([data-theme="sahara"],[data-theme="emerald"],[data-theme="andalusi"]) :is([class*="hover:bg-white/"]):hover { background-color: var(--veil) !important; }
+html:is([data-theme="sahara"],[data-theme="emerald"],[data-theme="andalusi"]) :is([class^="border-white/"],[class*=" border-white/"]) { border-color: var(--glass-line) !important; }
+html:is([data-theme="sahara"],[data-theme="emerald"],[data-theme="andalusi"]) .eq-bar { background: var(--gold); }
+html:is([data-theme="sahara"],[data-theme="emerald"],[data-theme="andalusi"]) .text-gold-bright { color: var(--gold-bright); }
+html:is([data-theme="sahara"],[data-theme="emerald"],[data-theme="andalusi"]) .bg-ink-night { background-color: var(--ink-night); }
+
+/* ---------- Font family switching ---------- */
+html[data-font="cairo"] body {
+  font-family: var(--font-cairo), "Tajawal", sans-serif;
+}
+html[data-font="amiri"] body {
+  font-family: var(--font-amiri), serif;
+}
+html[data-font="tajawal"] body {
+  font-family: var(--font-tajawal), "Tajawal", sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-amiri), serif;
+}
+
+.font-quran {
+  font-family: var(--font-amiri-quran), var(--font-amiri), serif;
+}
+
+/* Signature ornament: an 8-pointed khatam star, used sparingly */
+.khatam-star {
+  clip-path: polygon(
+    50% 0%, 61% 15%, 79% 6%, 79% 26%, 96% 21%, 88% 39%,
+    100% 50%, 88% 61%, 96% 79%, 79% 74%, 79% 94%, 61% 85%,
+    50% 100%, 39% 85%, 21% 94%, 21% 74%, 4% 79%, 12% 61%,
+    0% 50%, 12% 39%, 4% 21%, 21% 26%, 21% 6%, 39% 15%
+  );
+}
+
+/* Faint illuminated-manuscript strapwork texture — an 8-point star lattice
+   traced at hairline weight, used as a very low-opacity background wash.
+   Colored with currentColor so it follows both the light/dark parchment
+   tokens and every alternate theme automatically. */
+.geo-weave {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'%3E%3Cg fill='none' stroke='currentColor' stroke-width='1'%3E%3Cpath d='M42 4 60 20 42 36 24 20Z'/%3E%3Cpath d='M42 48 60 64 42 80 24 64Z'/%3E%3Cpath d='M0 26 18 42 0 58'/%3E%3Cpath d='M84 26 66 42 84 58'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .star-spin {
+    animation: star-spin 240s linear infinite;
+  }
+}
+
+@keyframes star-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* One orchestrated hero entrance — the greeting rises in first, the roundel
+   follows a beat later. Not reused per-card/per-scroll elsewhere on the
+   page; a single deliberate moment reads better than motion scattered
+   across every element. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-rise {
+    animation: hero-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Gentle attention-getting pulse for the floating video-generator badge —
+   scales and glows periodically without being jumpy or covering its text. */
+@media (prefers-reduced-motion: no-preference) {
+  .fab-pulse {
+    animation: fab-pulse 2.6s ease-in-out infinite;
+  }
+}
+
+@keyframes fab-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 0 0 0 rgba(230, 193, 90, 0.55);
+  }
+  50% {
+    transform: scale(1.045);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3), 0 0 0 8px rgba(230, 193, 90, 0);
+  }
+}
+
+/* Ayah roundel marker */
+.ayah-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 9999px;
+  border: 1.5px solid var(--gold);
+  font-family: var(--font-cairo), sans-serif;
+  font-size: 0.55em;
+  color: var(--emerald);
+  vertical-align: middle;
+  margin: 0 0.15em;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--ink-night);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ---- Native app shell: safe-area (notch/status bar/gesture bar) ----
+ * The Android shell now runs edge-to-edge (WindowCompat.setDecorFitsSystemWindows
+ * = false) so the WebView can paint behind the status/nav bars instead of the
+ * OS reserving a plain, mismatched strip above the page. These insets put the
+ * padding back in exactly the right places using real CSS instead. On the
+ * web/PWA these env() values are simply 0, so nothing changes there. */
+body {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ---------- Immersive screens & floating controls ---------- */
+.immersive { position: fixed; inset: 0; z-index: 30; overflow: hidden; background: radial-gradient(120% 60% at 85% -10%, var(--atmos-glow), transparent 60%), linear-gradient(180deg, var(--atmos-a) 0%, var(--atmos-b) 40%, var(--atmos-c) 100%); }
+.immersive-top {
+  position: absolute; inset-inline: 0; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  transition: opacity .35s, transform .45s var(--ease-spring);
+}
+.immersive-bottom {
+  position: absolute; inset-inline: 0; bottom: 0; z-index: 5;
+  display: flex; justify-content: center;
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+  transition: opacity .35s, transform .45s var(--ease-spring);
+}
+.immersive-top[data-visible="false"] { opacity: 0; transform: translateY(-12px); pointer-events: none; }
+.immersive-bottom[data-visible="false"] { opacity: 0; transform: translateY(16px); pointer-events: none; }
+.fcontrol {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  height: 44px; min-width: 44px; padding-inline: 12px; gap: 6px;
+  border-radius: 999px; color: var(--ivory); font-size: 13px; font-weight: 600;
+  background: var(--glass); border: 1px solid var(--glass-line);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  transition: transform .25s var(--ease-spring), background .3s, color .3s;
+}
+.fcontrol:active { transform: scale(.92); }
+.fcontrol-on { background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--on-gold); border-color: transparent; }
+.immersive-bottom .fcontrol { background: transparent; border-color: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.immersive-bottom .fcontrol-on { background: linear-gradient(135deg, var(--gold-bright), var(--gold)); }
+
+.counter-bloom { animation: bloom .7s var(--ease-spring) both; }
+@keyframes bloom { from { opacity: 1; transform: scale(.82); } to { opacity: 0; transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .counter-bloom { animation: none; opacity: 0; } }
+
+.page-turn { animation: page-in .5s var(--ease-spring) both; transform-origin: right center; }
+.page-turn[data-dir="prev"] { transform-origin: left center; animation-name: page-in-prev; }
+@keyframes page-in { from { opacity: 0; transform: perspective(1200px) rotateY(-14deg) translateX(-6%); } to { opacity: 1; transform: none; } }
+@keyframes page-in-prev { from { opacity: 0; transform: perspective(1200px) rotateY(14deg) translateX(6%); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .page-turn { animation: fade-only .2s both; } @keyframes fade-only { from { opacity: 0 } to { opacity: 1 } } }
+
+.eq-bar { display: inline-block; width: 3px; border-radius: 2px; background: var(--gold-bright); animation: eq 1s ease-in-out infinite; transform-origin: bottom; }
+@keyframes eq { 0%,100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .eq-bar { animation: none; transform: scaleY(.6); } }
+
+.ayah { cursor: pointer; border-radius: 8px; transition: background .3s; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.ayah[data-selected="true"] { background: rgba(227, 201, 135, 0.16); }
+.ayah-mark { color: var(--gold-bright); border-color: rgba(227, 201, 135, .55); }
+.field {
+  width: 100%; border-radius: 999px; padding: 14px 20px; color: var(--ivory);
+  background: var(--veil); border: 1px solid var(--glass-line); outline: none;
+}
+.field:focus { border-color: var(--gold); }
+.field::placeholder { color: var(--muted-on-night); }
+.chip { display: inline-flex; align-items: center; height: 38px; padding-inline: 16px; border-radius: 999px; font-size: 13px; white-space: nowrap; color: var(--muted-on-night); background: var(--veil); transition: background .3s, color .3s; }
+.chip[aria-pressed="true"], .chip[aria-current="true"] { background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--on-gold); font-weight: 600; }
+.h-scroll { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding-inline: 24px; scrollbar-width: none; }
+.h-scroll::-webkit-scrollbar { display: none; }
+.h-scroll > * { scroll-snap-align: start; flex-shrink: 0; }
+.immersive-scroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; padding: calc(76px + env(safe-area-inset-top)) 0 calc(110px + env(safe-area-inset-bottom)); scroll-behavior: smooth; }
+.ayah-menu {
+  position: fixed; z-index: 20; display: flex; gap: 2px; padding: 5px; border-radius: 999px;
+  animation: menu-in .28s var(--ease-spring) both;
+}
+@keyframes menu-in { from { opacity: 0; transform: translateY(6px) scale(.96); } to { opacity: 1; transform: none; } }
+.ayah-menu button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 46px; height: 46px; border-radius: 999px; color: var(--ivory); font-size: 9.5px; }
+.ayah-menu button:active { background: rgba(227,201,135,.2); }
+.ayah-menu button[aria-pressed="true"] { color: var(--gold-bright); }
+.mushaf-sheet { background: #f1e8cf; box-shadow: 0 30px 70px -20px rgba(0,0,0,.75), 0 0 0 1px rgba(160,120,40,.35), inset 0 0 0 6px #f1e8cf, inset 0 0 0 7px rgba(160,120,40,.45); }
+.mushaf-sheet img { mix-blend-mode: multiply; }
+.eq-bar { transform-origin: bottom; }
+
+.immersive-paper { background: #f3ead2 !important; }
+
+/* ---------- Always-dark scope (illustrated headers, art-backed screens) ----------
+   Inside it the dark palette is restored even when a light theme is active, so
+   text drawn over artwork is always readable. */
+.force-dark {
+  --ivory: #f3ecd9; --text-on-night: #f3ecd9; --text-on-parchment: #f3ecd9;
+  --muted-on-night: #a9bdb4; --muted-on-parchment: #a9bdb4;
+  --gold: #c8a45a; --gold-bright: #e3c987;
+  --glass: rgba(9, 35, 29, 0.62); --glass-line: rgba(227, 201, 135, 0.16);
+  --surface-strong: rgba(6, 21, 18, 0.6); --veil: rgba(243, 236, 217, 0.06);
+  --atmos-glow: rgba(47, 158, 130, 0.22); --atmos-a: #0b2a22; --atmos-b: #071e19; --atmos-c: #061512;
+  --on-gold: #1a1407;
+  color: var(--ivory);
+}
+.force-dark :is([class^="bg-white/"],[class*=" bg-white/"]) { background-color: rgba(255,255,255,.06) !important; }
+.force-dark :is([class^="border-white/"],[class*=" border-white/"]) { border-color: rgba(255,255,255,.12) !important; }
+.scene-art { -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent); mask-image: linear-gradient(to bottom, #000 62%, transparent); }

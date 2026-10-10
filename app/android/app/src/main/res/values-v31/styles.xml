@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- API 31+ only: the real platform SplashScreen branding-image slot has
+         no equivalent in androidx.core:core-splashscreen's compat attrs
+         (confirmed by a failed resource-link build), so it can't live in
+         the shared values/styles.xml. A style resource selected for a
+         qualified config (like -v31) is used in full, not merged item-by-
+         item with the unqualified version — so every item from the base
+         style is repeated here verbatim, with the one new API 31+ item
+         (the real android:windowSplashScreenBrandingImage, "not particularly
+         recommended by Google, but supported") added on top. Devices below
+         API 31 keep using the plain values/styles.xml version untouched,
+         where the compat library draws its own icon-only splash. -->
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splashBackground</item>
+        <item name="windowSplashScreenAnimationDuration">400</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/splash_branding</item>
+    </style>
+
+</resources>
