@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
   // WebView exactly as it would be for local content, so every feature
   // — including the notification system — works unchanged.
   server: {
-    url: "https://zad-almuslim-app.vercel.app",
+    url: "https://zad-application2.vercel.app",
     androidScheme: "https",
     cleartext: false,
     allowNavigation: [
